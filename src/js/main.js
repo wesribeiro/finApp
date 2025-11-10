@@ -86,12 +86,7 @@ function loadInitialData() {
     // Se não houver despesas (primeiro uso), adiciona dados de exemplo
     if (state.expenses.length === 0) {
         state.expenses = [
-            { id: "1", name: "Aluguel", defaultValue: 380, currentValue: 380, status: 'pending', isTemporary: false, sortOrder: 1 },
-            { id: "2", name: "Compras", defaultValue: 200, currentValue: 200, status: 'pending', isTemporary: false, sortOrder: 2 },
-            { id: "3", name: "Internet", defaultValue: 120, currentValue: 120, status: 'pending', isTemporary: false, sortOrder: 3 },
-            { id: "4", name: "Energia", defaultValue: 200, currentValue: 200, status: 'pending', isTemporary: false, sortOrder: 4 },
-            { id: "5", name: "PicPay", defaultValue: 4260, currentValue: 4260, status: 'pending', isTemporary: false, sortOrder: 5 },
-            { id: "6", name: "Nubank", defaultValue: 1660.34, currentValue: 1660.34, status: 'pending', isTemporary: false, sortOrder: 6 }
+           
         ];
         storage.saveExpenses(state.expenses); 
     }
