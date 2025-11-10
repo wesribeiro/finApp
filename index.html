@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Financeiro</title>
+    <link href="./dist/output.css" rel="stylesheet">
+    
+    <script src="./src/js/sortable.min.js" defer></script>
+    
+    <script type="module" src="./src/js/main.js" defer></script>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased h-screen flex flex-col">
+
+    <header id="summary-card" class="fixed top-0 left-0 right-0 z-10 bg-indigo-600 text-white shadow-lg">
+        <div class="max-w-md mx-auto p-4">
+            
+            <div class="flex justify-between items-center">
+                <div class="flex-1">
+                    <div class="mb-2">
+                        <span class="text-sm font-medium text-indigo-200">Saldo Atual</span>
+                        <h2 id="summary-balance" class="text-3xl font-bold text-white">R$ 0,00</h2>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-indigo-200">A Pagar</span>
+                        <h2 id="summary-pending" class="text-2xl font-bold text-red-400">R$ 0,00</h2>
+                    </div>
+                </div>
+                
+                <button id="toggle-summary" class="p-2 text-indigo-200 hover:text-white">
+                    <svg id="toggle-summary-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+            </div>
+
+            <div id="summary-details" class="mt-4 pt-4 border-t border-indigo-500 hidden">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <span class="text-xs font-medium text-indigo-200">Projeção Final</span>
+                        <p id="summary-projection" class="text-lg font-semibold text-white">R$ 0,00</p>
+                    </div>
+                    <div>
+                        <span class="text-xs font-medium text-indigo-200">Ignorado/Econ.</span>
+                        <p id="summary-ignored" class="text-lg font-semibold text-white">R$ 0,00</p>
+                    </div>
+                    <div>
+                        <span class="text-xs font-medium text-indigo-200">Já Pago</span>
+                        <p id="summary-paid" class="text-lg font-semibold text-white">R$ 0,00</p>
+                    </div>
+                     <div>
+                        <span class="text-xs font-medium text-indigo-200 flex items-center">
+                            Saldo Inicial
+                            <button id="btn-edit-initial-balance" class="ml-2 p-0.5 rounded-full hover:bg-indigo-700">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.829-2.828z" />
+                                </svg>
+                            </button>
+                        </span>
+                        <p id="summary-initial" class="text-lg font-semibold text-white">R$ 0,00</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <div id="main-content" class="flex-1 overflow-y-auto pt-36 pb-20"> 
+        <div class="max-w-md mx-auto">
+
+            <main id="view-simulation" class="p-4">
+                <h2 class="text-lg font-semibold mb-2 text-slate-600">Simulação do Mês</h2>
+                <ul id="expense-list" class="space-y-3">
+                     </ul>
+            </main>
+
+            <main id="view-add" class="p-4 hidden">
+                <h2 class="text-lg font-semibold mb-4 text-slate-600">Adicionar Nova Despesa</h2>
+                <form id="form-add-expense" class="space-y-4">
+                    <div>
+                        <label for="expense-name" class="block text-sm font-medium text-slate-700">Nome da Despesa</label>
+                        <input type="text" id="expense-name" name="expense-name" required
+                               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="expense-value" class="block text-sm font-medium text-slate-700">Valor Padrão (R$)</label>
+                        <input type="number" id="expense-value" name="expense-value" required
+                               placeholder="Ex: 120.50" step="0.01" min="0.01"
+                               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">Tipo de Despesa</label>
+                        <div class="mt-2 space-y-2">
+                            <div class="flex items-center">
+                                <input id="type-fixed" name="expense-type" type="radio" value="fixed" checked
+                                       class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
+                                <label for="type-fixed" class="ml-3 block text-sm text-slate-800">
+                                    Fixa (Automática, repete todo mês)
+                                </label>
+                            </div>
+                            <div class="flex items-center">
+                                <input id="type-temp" name="expense-type" type="radio" value="temp"
+                                       class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
+                                <label for="type-temp" class="ml-3 block text-sm text-slate-800">
+                                    Temporária (Só este mês)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit"
+                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Salvar Despesa
+                    </button>
+                </form>
+            </main>
+
+            <main id="view-manage" class="p-4 hidden">
+                <h2 class="text-lg font-semibold mb-2 text-slate-600">Gerenciar Despesas Fixas</h2>
+                <p class="text-sm text-slate-500">Arraste os itens para reordenar a lista.</p>
+                <ul id="manage-list" class="space-y-3 mt-4">
+                     <li class="p-4 bg-white rounded-lg shadow-sm text-slate-500 text-center">
+                        Carregando...
+                    </li>
+                </ul>
+                <button id="btn-new-month" class="mt-6 w-full bg-indigo-500 text-white p-3 rounded-lg font-semibold">
+                    Iniciar Novo Mês
+                </button>
+            </main>
+
+        </div>
+    </div>
+
+
+    <footer id="nav-bar" class="fixed bottom-0 left-0 right-0 z-10 bg-white shadow-inner-top border-t border-slate-200">
+        <nav class="max-w-md mx-auto flex justify-around">
+            <button data-view="view-simulation" class="nav-button flex-1 p-3 flex flex-col items-center text-indigo-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6" />
+                </svg>
+                <span class="text-xs font-medium">Início</span>
+            </button>
+            <button data-view="view-add" class="nav-button flex-1 p-3 flex flex-col items-center text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="text-xs font-medium">Adicionar</span>
+            </button>
+            <button data-view="view-manage" class="nav-button flex-1 p-3 flex flex-col items-center text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                <span class="text-xs font-medium">Despesas</span>
+            </button>
+        </nav>
+    </footer>
+
+    
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden"></div>
+
+    <div id="modal-actions" class="fixed bottom-0 left-0 right-0 z-30 bg-white rounded-t-lg shadow-lg p-4 max-w-md mx-auto hidden
+                                  transform translate-y-full transition-transform duration-300">
+        <h3 id="actions-title" class="text-lg font-semibold text-center mb-4 text-slate-700">O que deseja fazer?</h3>
+        <div class="space-y-3">
+            <button id="action-pay" class="w-full bg-green-500 text-white p-3 rounded-lg font-semibold">Pagar</button>
+            <button id="action-edit" class="w-full bg-yellow-500 text-white p-3 rounded-lg font-semibold">Editar Valor (Simulação)</button>
+            <button id="action-toggle-ignore" class="w-full bg-gray-500 text-white p-3 rounded-lg font-semibold">Ignorar este mês</button>
+            <button id="action-delete" class="w-full bg-red-500 text-white p-3 rounded-lg font-semibold">Excluir (Permanente)</button>
+            <button id="action-cancel" class="w-full bg-slate-200 text-slate-700 p-3 rounded-lg font-semibold mt-4">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="modal-edit" class="fixed top-1/2 left-1/2 z-30 bg-white rounded-lg shadow-lg p-6 max-w-sm w-11/12 hidden
+                               transform -translate-x-1/2 -translate-y-1/2">
+        <h3 id="edit-title" class="text-lg font-semibold mb-4 text-slate-700">Editar Valor (Simulação)</h3>
+        <form id="form-edit-expense">
+            <div class="mb-2">
+                <span class="text-sm font-medium text-slate-500">Valor Padrão:</span>
+                <span id="edit-default-value" class="text-sm font-medium text-slate-700">R$ 0,00</span>
+            </div>
+            <div>
+                <label for="edit-expense-value" class="block text-sm font-medium text-slate-700">Novo Valor (R$)</label>
+                <input type="number" id="edit-expense-value" name="edit-expense-value" required
+                       placeholder="Ex: 100.00" step="0.01" min="0"
+                       class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" id="edit-cancel" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold">Cancelar</button>
+                <button type="submit" id="edit-save" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold">Salvar</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="modal-delete" class="fixed top-1/2 left-1/2 z-30 bg-white rounded-lg shadow-lg p-6 max-w-sm w-11/12 hidden
+                                transform -translate-x-1/2 -translate-y-1/2">
+        <h3 class="text-lg font-semibold mb-2 text-slate-700">Confirmar Exclusão</h3>
+        <p id="delete-text" class="text-slate-600 mb-6">Tem certeza que deseja excluir esta despesa permanentemente?</p>
+        <div class="flex justify-end space-x-3">
+            <button type="button" id="delete-cancel" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold">Cancelar</button>
+            <button type="button" id="delete-confirm" class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold">Excluir</button>
+        </div>
+    </div>
+    
+    <div id="modal-edit-balance" class="fixed top-1/2 left-1/2 z-30 bg-white rounded-lg shadow-lg p-6 max-w-sm w-11/12 hidden
+                                transform -translate-x-1/2 -translate-y-1/2">
+        <h3 class="text-lg font-semibold mb-4 text-slate-700">Editar Saldo Inicial</h3>
+        <form id="form-edit-balance">
+            <div>
+                <label for="edit-balance-value" class="block text-sm font-medium text-slate-700">Novo Saldo (R$)</label>
+                <input type="number" id="edit-balance-value" name="edit-balance-value" required
+                       placeholder="Ex: 5000.00" step="0.01" min="0"
+                       class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" id="edit-balance-cancel" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold">Cancelar</button>
+                <button type="submit" id="edit-balance-save" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold">Salvar</button>
+            </div>
+        </form>
+    </div>
+    
+    <div id="modal-edit-permanent" class="fixed top-1/2 left-1/2 z-30 bg-white rounded-lg shadow-lg p-6 max-w-sm w-11/12 hidden
+                                transform -translate-x-1/2 -translate-y-1/2">
+        <h3 class="text-lg font-semibold mb-4 text-slate-700">Editar Despesa Fixa</h3>
+        <form id="form-edit-permanent">
+            <div class="space-y-4">
+                 <div>
+                    <label for="edit-permanent-name" class="block text-sm font-medium text-slate-700">Nome da Despesa</label>
+                    <input type="text" id="edit-permanent-name" name="edit-permanent-name" required
+                           class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="edit-permanent-value" class="block text-sm font-medium text-slate-700">Valor Padrão (R$)</LAbel>
+                    <input type="number" id="edit-permanent-value" name="edit-permanent-value" required
+                           placeholder="Ex: 120.50" step="0.01" min="0.01"
+                           class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" id="edit-permanent-cancel" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold">Cancelar</button>
+                <button type="submit" id="edit-permanent-save" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold">Salvar</button>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>
